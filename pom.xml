@@ -55,6 +55,19 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Jsoup for Web Scraping -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.16.1</version>
+		</dependency>
+
+		<!-- OpenCSV for CSV Handling -->
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.9</version>
+		</dependency>
 	</dependencies>
 
 	<build>
