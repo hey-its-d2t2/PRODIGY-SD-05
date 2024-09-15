@@ -1,10 +1,202 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Product Scraper</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom styles */
+        body {
+            padding-top: 56px; /* Adjust based on navbar height */
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .card:hover {
+            transform: scale(1.02);
+        }
+        .table-responsive {
+            margin-bottom: 20px;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .footer .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer .sub-footer {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .form-control, .btn {
+            border-radius: 0.25rem;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .card-title {
+            font-size: 1.5rem;
+        }
+        .table thead th {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-download {
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
 <body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">Product Scraper</a>
+        <span class="navbar-text ml-auto">Deepak Singh</span>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">Web Scraper</h5>
+        </div>
+        <div class="card-body">
+            <form id="scrapeForm">
+                <div class="mb-3">
+                    <label for="url" class="form-label">Enter Website URL</label>
+                    <input type="text" id="url" name="url" class="form-control" placeholder="https://example.com/products" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Scrape</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button id="downloadBtn" class="btn btn-success btn-download" style="display: none;">Download CSV</button>
+        <div class="table-responsive">
+            <h2>Scraped Products</h2>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Rating</th>
+                </tr>
+                </thead>
+                <tbody id="productsBody">
+                <!-- Products will be inserted here dynamically -->
+                </tbody>
+            </table>
+            <div id="noDataMessage">
+                <p>No data available. Enter a valid URL and scrape.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Product Scraper</h5>
+                <p>Description: A tool to scrape product data from websites and download it as a CSV file.</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <h5>Useful Links</h5>
+                <p>
+                    <a href="https://example.com">Example URL</a><br>
+                    <a href="https://another-example.com">Another Example URL</a>
+                </p>
+            </div>
+        </div>
+        <div class="sub-footer">
+            <p>&copy; 2024 Deepak Singh | <a href="mailto:deepsinghkumar01@gmail.com">deepsinghkumar01@gmail.com</a></p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let scrapedData = [];
+
+    $(document).ready(function () {
+        $('#scrapeForm').submit(function (event) {
+            event.preventDefault();
+
+            var url = $('#url').val();
+
+            $.ajax({
+                url: '/api/scrap/scrape',
+                type: 'POST',
+                data: { url: url },
+                success: function (data) {
+                    scrapedData = data;
+
+                    $('#productsBody').empty();
+                    if (data.length > 0) {
+                        $('#noDataMessage').hide();
+                        $('#downloadBtn').show();
+
+                        data.forEach(function (product) {
+                            $('#productsBody').append(`
+                                <tr>
+                                    <td>${product.name}</td>
+                                    <td>${product.price}</td>
+                                    <td>${product.rating}</td>
+                                </tr>
+                            `);
+                        });
+                    } else {
+                        $('#noDataMessage').show();
+                        $('#downloadBtn').hide();
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while scraping the data.');
+                }
+            });
+        });
+
+        $('#downloadBtn').click(function () {
+            $.ajax({
+                url: '/api/scrap/download',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(scrapedData),
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (data) {
+                    var blob = new Blob([data], { type: 'application/csv' });
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'products.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                },
+                error: function () {
+                    alert('An error occurred while downloading the CSV.');
+                }
+            });
+        });
+    });
+</script>
 
 </body>
 </html>
