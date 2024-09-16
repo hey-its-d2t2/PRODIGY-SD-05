@@ -3,13 +3,11 @@ package com.PRODIGY_SD_05.controller;
 import com.PRODIGY_SD_05.model.Product;
 import com.PRODIGY_SD_05.service.CsvExportService;
 import com.PRODIGY_SD_05.service.ScrapingService;
-import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
@@ -45,4 +43,8 @@ public class WebScrapingController {
                 .contentLength(outputStream.size())
                 .body(file);
     }
+
+
+    // write code for http/https other errors and warnings, and if internet is not connected, not allowed, or similar errors
+    // which are needs to be handled.
 }
